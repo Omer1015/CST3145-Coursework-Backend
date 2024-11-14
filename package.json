@@ -7,9 +7,13 @@
   "main": "server.js",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.21.1",
+    "mongodb": "^6.10.0",
+    "morgan": "^1.10.0",
     "mustache": "^4.2.0",
-    "node-modules": "^1.0.1"
+    "node-modules": "^1.0.1",
+    "properties-reader": "^2.3.0"
   },
   "scripts": {
     "start": "node server.js"
