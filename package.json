@@ -1,14 +1,16 @@
 {
   "name": "cst3145-coursework-backend",
+  "author": "Omer Elbashir",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
   "license": "ISC",
   "dependencies": {
+    "mustache": "^4.2.0",
     "node-modules": "^1.0.1"
   }
 }
