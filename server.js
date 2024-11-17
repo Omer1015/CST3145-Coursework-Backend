@@ -1,7 +1,8 @@
 const express = require("express"); // Requires the Express module
+const propertiesReader = require("properties-reader");
 const path = require("path");
 const fs = require("fs");
-const propertiesReader = require("properties-reader");
+
 
 const app = express(); // Calls the express function to start a new Express application
 
@@ -29,11 +30,16 @@ client.connect()
   .then(() => {
     console.log("Connected to MongoDB");
     db = client.db(dbName);
+    // Check if the connection is successful and list collections
+    db.listCollections().toArray().then((collections) => {
+      console.log("Available collections:", collections.map(c => c.name));
+    }).catch(console.error);
   })
   .catch(err => {
     console.error("Error connecting to MongoDB:", err);
     process.exit(1); // Exit if connection fails
   });
+
 
 // Middleware to log requests
 app.use((req, res, next) => {
@@ -49,13 +55,16 @@ app.param("collectionName", function (req, res, next, collectionName) {
 });
 
 app.get("/collections/:collectionName", function (req, res, next) {
-  req.collection.find({}).toArray(function (err, results) {
-    if (err) {
-      return next(err);
-    }
-    res.send(results);
+    req.collection.find({}).toArray(function (err, results) {
+      if (err) {
+        console.error("Error fetching collection:", err);
+        return next(err);
+      }
+      console.log("Fetched results from collection:", results);
+      res.json(results); // Use `res.json` for proper JSON formatting
+    });
   });
-});
+  
 
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, "public")));
