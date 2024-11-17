@@ -54,15 +54,13 @@ app.param("collectionName", function (req, res, next, collectionName) {
   return next();
 });
 
-app.get("/collections/:collectionName", function (req, res, next) {
-    req.collection.find({}).toArray(function (err, results) {
-      if (err) {
-        console.error("Error fetching collection:", err);
-        return next(err);
-      }
-      console.log("Fetched results from collection:", results);
-      res.json(results); // Use `res.json` for proper JSON formatting
-    });
+app.get("/collections/:collectionName", async (req, res, next) => {
+    try {
+      const results = await req.collection.find({}).toArray();
+      res.json(results);
+    } catch (error) {
+      next(error);
+    }
   });
   
 
