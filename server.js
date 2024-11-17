@@ -1,8 +1,39 @@
 const express = require("express"); // Requires the Express module
 const path = require("path");
 const fs = require("fs");
+const propertiesReader = require("properties-reader");
 
 const app = express(); // Calls the express function to start a new Express application
+
+// Load properties from db.properties
+let propertiesPath = path.resolve(__dirname, "conf/db.properties");
+let properties = propertiesReader(propertiesPath);
+let dbPprefix = properties.get("db.prefix");
+// URL-Encoding of User and PWD for potential special characters
+let dbUsername = encodeURIComponent(properties.get("db.user"));
+let dbPwd = encodeURIComponent(properties.get("db.pwd"));
+let dbName = properties.get("db.dbName");
+let dbUrl = properties.get("db.dbUrl");
+let dbParams = properties.get("db.params");
+
+// Construct MongoDB connection URI
+const uri = dbPprefix + dbUsername + ":" + dbPwd + dbUrl + "/" + dbName + dbParams;
+
+// Import MongoDB client
+const { MongoClient, ServerApiVersion } = require("mongodb");
+const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
+let db;
+
+// Connect to MongoDB
+client.connect()
+  .then(() => {
+    console.log("Connected to MongoDB");
+    db = client.db(dbName);
+  })
+  .catch(err => {
+    console.error("Error connecting to MongoDB:", err);
+    process.exit(1); // Exit if connection fails
+  });
 
 // Middleware to log requests
 app.use((req, res, next) => {
@@ -11,14 +42,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware to serve static files from the "public" folder
+// MongoDB route for collections
+app.param("collectionName", function (req, res, next, collectionName) {
+  req.collection = db.collection(collectionName);
+  return next();
+});
+
+app.get("/collections/:collectionName", function (req, res, next) {
+  req.collection.find({}).toArray(function (err, results) {
+    if (err) {
+      return next(err);
+    }
+    res.send(results);
+  });
+});
+
+// Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// Direct file-serving middleware for debugging
+// Custom middleware for serving files
 app.use((req, res, next) => {
   const filePath = path.join(__dirname, "public", req.url);
   console.log("Attempting to serve file from:", filePath);
-  
+
   fs.stat(filePath, (err, fileInfo) => {
     if (err) {
       console.log("File not found or error accessing file:", err);
@@ -36,7 +82,7 @@ app.use((req, res, next) => {
 
 // 404 Middleware
 app.use((req, res) => {
-  res.status(404).send("Hello World");
+  res.status(404).send("File not found!");
 });
 
 // Start the server
