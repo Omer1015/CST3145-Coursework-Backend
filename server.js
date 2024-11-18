@@ -62,8 +62,59 @@ app.get("/collections/:collectionName", async (req, res, next) => {
       next(error);
     }
   });
-  
 
+  app.get(
+    "/collections/:collectionName/:limit/:sortBy/:order",
+    async (req, res, next) => {
+      try {
+        // Extract parameters
+        const { limit, sortBy, order } = req.params;
+  
+        // Validate 'limit' parameter
+        const maxResults = parseInt(limit, 10);
+        if (isNaN(maxResults) || maxResults <= 0) {
+          return res.status(400).json({
+            error: "Invalid limit. Must be a positive integer.",
+          });
+        }
+  
+        // Determine sort direction
+        const sortDirection = order.toLowerCase() === "desc" ? -1 : 1;
+  
+        // Ensure valid sort field and direction
+        if (!["asc", "desc"].includes(order.toLowerCase())) {
+          return res.status(400).json({
+            error: "Invalid order. Must be 'asc' or 'desc'.",
+          });
+        }
+  
+        console.log(`Fetching ${maxResults} documents from collection '${req.params.collectionName}'`);
+        console.log(`Sorting by '${sortBy}' in '${order}' order`);
+  
+        // Query database
+        const sortedData = await req.collection
+          .find({})
+          .sort({ [sortBy]: sortDirection }) // Dynamic sorting
+          .limit(maxResults) // Limit results
+          .toArray();
+  
+        // Send results
+        res.json({
+          message: "Query successful",
+          collection: req.params.collectionName,
+          limit: maxResults,
+          sortBy,
+          order,
+          results: sortedData,
+        });
+      } catch (error) {
+        console.error("Error during query execution:", error);
+        next(error); // Pass error to middleware
+      }
+    }
+  );
+  
+  
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
