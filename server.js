@@ -63,6 +63,7 @@ app.get("/collections/:collectionName", async (req, res, next) => {
     }
   });
 
+  //Sorting with Get Start
   app.get(
     "/collections/:collectionName/:limit/:sortBy/:order",
     async (req, res, next) => {
@@ -113,8 +114,49 @@ app.get("/collections/:collectionName", async (req, res, next) => {
       }
     }
   );
-  
-  
+
+  //Sorting with Get End
+
+  //Post To Orders
+
+  // Middleware to parse JSON body in requests
+app.use(express.json());
+
+// POST route to insert a new document into the specified collection
+app.post("/collections/:collectionName", async (req, res, next) => {
+  try {
+    // Log the incoming data for debugging
+    console.log("Request Body:", req.body);
+
+    // Ensure the request body is not empty
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ error: "Request body is empty or invalid." });
+    }
+
+    // Validate required fields
+    if (!req.body.title || !req.body.price) {
+      return res.status(400).json({
+        error: "Missing required fields. Ensure 'title' and 'price' are provided.",
+      });
+    }
+
+    // Insert the new document into the specified collection
+    const result = await req.collection.insertOne(req.body);
+
+    // Respond with the result of the insertion
+    res.status(201).json({
+      message: "Document inserted successfully.",
+      insertedId: result.insertedId,
+    });
+  } catch (err) {
+    console.error("Error inserting document:", err);
+    next(err); // Pass the error to the error-handling middleware
+  }
+});
+
+//Post Functionality End  
+
+
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, "public")));
 
