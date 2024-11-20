@@ -158,16 +158,16 @@ app.post("/collections/:collectionName", async (req, res, next) => {
 
 //Put Functionality Start
 
-app.put("/collections/:collectionName/:id", async (req, res, next) => {
+app.put('/collections/:collectionName/:id', async (req, res, next) => {
     try {
         const collectionName = req.params.collectionName; // Collection name from the URL
-        const documentId = req.params.id; // Document ID from the URL
+        const documentId = parseInt(req.params.id, 10); // Document ID from the URL
         const updateFields = req.body; // Update Field
         const collection = db.collection(collectionName);
-
-        // Validate and update the document
+        
+        //Validate and update the document
         const result = await collection.updateOne(
-            { _id: new ObjectId(documentId) }, // Filter by _id
+            { id: documentId }, // Match by `id` field
             { $set: updateFields } // Update fields
         );
 
@@ -181,6 +181,7 @@ app.put("/collections/:collectionName/:id", async (req, res, next) => {
         res.status(500).send({ error: "An error occurred while updating the document" });
     }
 });
+
 
 //Put Functionality End
 
