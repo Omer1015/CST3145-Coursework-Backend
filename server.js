@@ -2,6 +2,7 @@ const express = require("express"); // Requires the Express module
 const propertiesReader = require("properties-reader");
 const path = require("path");
 const fs = require("fs");
+const { ObjectId } = require("mongodb");
 
 
 const app = express(); // Calls the express function to start a new Express application
@@ -117,7 +118,7 @@ app.get("/collections/:collectionName", async (req, res, next) => {
 
   //Sorting with Get End
 
-  //Post To Orders
+  //Post Functionality Start
 
   // Middleware to parse JSON body in requests
 app.use(express.json());
@@ -133,14 +134,13 @@ app.post("/collections/:collectionName", async (req, res, next) => {
       return res.status(400).json({ error: "Request body is empty or invalid." });
     }
 
-    // Validate required fields
+    // Validation
     if (!req.body.title || !req.body.price) {
       return res.status(400).json({
         error: "Missing required fields. Ensure 'title' and 'price' are provided.",
       });
     }
 
-    // Insert the new document into the specified collection
     const result = await req.collection.insertOne(req.body);
 
     // Respond with the result of the insertion
@@ -156,6 +156,33 @@ app.post("/collections/:collectionName", async (req, res, next) => {
 
 //Post Functionality End  
 
+//Put Functionality Start
+
+app.put("/collections/:collectionName/:id", async (req, res, next) => {
+    try {
+        const collectionName = req.params.collectionName; // Collection name from the URL
+        const documentId = req.params.id; // Document ID from the URL
+        const updateFields = req.body; // Update Field
+        const collection = db.collection(collectionName);
+
+        // Validate and update the document
+        const result = await collection.updateOne(
+            { _id: new ObjectId(documentId) }, // Filter by _id
+            { $set: updateFields } // Update fields
+        );
+
+        if (result.matchedCount === 0) {
+            res.status(404).send({ msg: "Document not found" });
+        } else {
+            res.send({ msg: "Document updated successfully" });
+        }
+    } catch (err) {
+        console.error("Error updating document:", err);
+        res.status(500).send({ error: "An error occurred while updating the document" });
+    }
+});
+
+//Put Functionality End
 
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, "public")));
