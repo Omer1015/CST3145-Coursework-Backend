@@ -4,12 +4,9 @@ const path = require("path");
 const fs = require("fs");
 const { ObjectId } = require("mongodb");
 const cors = require('cors');
-app.use(cors());
-
-
-
 
 const app = express(); // Calls the express function to start a new Express application
+
 
 // Load properties from db.properties
 let propertiesPath = path.resolve(__dirname, "conf/db.properties");
@@ -45,6 +42,7 @@ client.connect()
     process.exit(1); // Exit if connection fails
   });
 
+app.use(cors());
 
 // Middleware to log requests
 app.use((req, res, next) => {
