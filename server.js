@@ -3,6 +3,10 @@ const propertiesReader = require("properties-reader");
 const path = require("path");
 const fs = require("fs");
 const { ObjectId } = require("mongodb");
+const cors = require('cors');
+app.use(cors());
+
+
 
 
 const app = express(); // Calls the express function to start a new Express application
