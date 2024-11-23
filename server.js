@@ -137,11 +137,11 @@ app.post("/collections/:collectionName", async (req, res, next) => {
     }
 
     // Validation
-    if (!req.body.title || !req.body.price) {
-      return res.status(400).json({
-        error: "Missing required fields. Ensure 'title' and 'price' are provided.",
-      });
-    }
+    //if (!req.body.title || !req.body.price) {
+      //return res.status(400).json({
+        //error: "Missing required fields. Ensure 'title' and 'price' are provided.",
+      //});
+    //}
 
     const result = await req.collection.insertOne(req.body);
 
