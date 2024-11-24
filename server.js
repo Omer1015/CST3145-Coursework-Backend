@@ -120,6 +120,57 @@ app.get("/collections/:collectionName", async (req, res, next) => {
 
   //Sorting with Get End
 
+  //Searching with Get Start
+
+  app.get(
+    "/collections/:collectionName/search/:query",
+    async (req, res, next) => {
+      try {
+        const { collectionName, query } = req.params;
+  
+        // Build the regex search pattern
+        const searchRegex = { $regex: query, $options: "i" };
+  
+        // Define fields to search in
+        const fieldsToSearch = ["title", "Subject", "description", "Location", "price", "availableInventory"];
+  
+        // Build the match query for all fields
+        const matchQuery = {
+          $or: fieldsToSearch.map((field) => ({
+            [field]: { $regex: query, $options: "i" },
+          })),
+        };
+  
+        // Execute the search query
+        const results = await req.collection.aggregate([
+          {
+            $addFields: {
+              price: { $toString: "$price" }, // Convert price to string
+              availableInventory: { $toString: "$availableInventory" }, // Convert inventory to string
+            },
+          },
+          {
+            $match: matchQuery,
+          },
+        ]).toArray();
+  
+        if (results.length === 0) {
+          return res.status(404).send({ message: "No matching results found." });
+        }
+  
+        // Send the results
+        console.log("Search results:", results);
+        res.send(results);
+      } catch (err) {
+        console.error("Error performing search:", err);
+        next(err); // Pass error to middleware
+      }
+    }
+  );
+  
+
+  //Searching with Get End
+
   //Post Functionality Start
 
   // Middleware to parse JSON body in requests
