@@ -3,7 +3,7 @@ const propertiesReader = require("properties-reader");
 const path = require("path");
 const fs = require("fs");
 const { ObjectId } = require("mongodb");
-const cors = require('cors');
+const cors = require('cors'); // Enables Cross-Origin Resource Sharing
 
 const app = express(); // Calls the express function to start a new Express application
 
@@ -42,7 +42,7 @@ client.connect()
     process.exit(1); // Exit if connection fails
   });
 
-app.use(cors());
+app.use(cors()); //Enable Cors for all requests
 
 // Middleware to log requests
 app.use((req, res, next) => {
@@ -57,6 +57,7 @@ app.param("collectionName", function (req, res, next, collectionName) {
   return next();
 });
 
+//Route to fetch documents from specific collection
 app.get("/collections/:collectionName", async (req, res, next) => {
     try {
       const results = await req.collection.find({}).toArray();
@@ -66,7 +67,7 @@ app.get("/collections/:collectionName", async (req, res, next) => {
     }
   });
 
-  //Sorting with Get Start
+  //Sorting with Get Start 
   app.get(
     "/collections/:collectionName/:limit/:sortBy/:order",
     async (req, res, next) => {
@@ -203,7 +204,7 @@ app.post("/collections/:collectionName", async (req, res, next) => {
     });
   } catch (err) {
     console.error("Error inserting document:", err);
-    next(err); // Pass the error to the error-handling middleware
+    next(err); 
   }
 });
 
@@ -220,7 +221,7 @@ app.put('/collections/:collectionName/:id', async (req, res, next) => {
         
         //Validate and update the document
         const result = await collection.updateOne(
-            { id: documentId }, // Match by `id` field
+            { id: documentId }, // Match by `id` field in mongodb
             { $set: updateFields } // Update fields
         );
 
@@ -269,6 +270,8 @@ app.use((req, res) => {
 // app.listen(3000, function() {
 // console.log("App started on port 3000");
 // });
+
+// Starts the server
 const port = process.env.PORT || 3000;
 app.listen(port, function() {
  console.log("App started on port: " + port);
